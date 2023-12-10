@@ -5,7 +5,7 @@ const Home = () => {
   const [todos, setTodos] = useState([]);
 
   
-   /*/
+   
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -98,7 +98,7 @@ const Home = () => {
         console.log(error);
       });
   };
- /*/
+
  return (
   <div className="container">
     <h1>My Todos</h1>
