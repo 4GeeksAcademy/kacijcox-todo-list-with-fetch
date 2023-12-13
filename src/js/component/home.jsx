@@ -4,8 +4,6 @@ const Home = () => {
   const [inputValue, setInputValue] = useState("");
   const [todos, setTodos] = useState([]);
 
-  
-   
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -13,55 +11,70 @@ const Home = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch data");
         }
-  
+
         const data = await response.json();
         setTodos(data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
   }, []);
-  
+
+  useEffect(() => {
+    const updateTodosOnServer = async () => {
+      try {
+        const response = await fetch("https://playground.4geeks.com/apis/fake/todos/user/kcox", {
+          method: "PUT",
+          body: JSON.stringify(todos),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          console.log(response);
+          throw new Error("Failed to update todos on the server");
+      }
+      } catch (error) {
+        console.error("Error updating todos on the server:", error);
+      }
+    };
+
+    updateTodosOnServer();
+  }, [todos]);
 
   const fetchTasks = () => {
-    fetch("https://playground.4geeks.com/apis/fake/todos/user/")
+    fetch("https://playground.4geeks.com/apis/fake/todos/user/kcox")
       .then((resp) => resp.json())
       .then((data) => {
-        // Update the local state with the fetched tasks
         setTodos(data);
       })
       .catch((error) => {
-        // Handle errors
         console.log(error);
       });
   };
 
   const createTask = () => {
-    // Add a new task to the server
     fetch("https://playground.4geeks.com/apis/fake/todos/user/", {
       method: "POST",
-      body: JSON.stringify([]), // Pass an empty array since there are no todos yet
+      body: JSON.stringify([]),
       headers: {
         "Content-Type": "application/json",
       },
     })
       .then((resp) => resp.json())
       .then((data) => {
-        // Update the local state with the new tasks from the server
         setTodos([]);
-        setInputValue(""); // Clear input after adding task
+        setInputValue("");
       })
       .catch((error) => {
-        // Handle errors
         console.log(error);
       });
   };
 
- 
   const deleteTask = (index) => {
-    // Delete a task from the server
     fetch("https://playground.4geeks.com/apis/fake/todos/user/kcox", {
       method: "PUT",
       body: JSON.stringify(todos.filter((_, currentIndex) => index !== currentIndex)),
@@ -71,59 +84,57 @@ const Home = () => {
     })
       .then((resp) => resp.json())
       .then((data) => {
-        // Update the local state with the new tasks from the server
         setTodos(data);
       })
       .catch((error) => {
-        // Handle errors
         console.log(error);
       });
   };
 
   const clearAllTasks = () => {
-    // Clear all tasks on the server
     fetch("https://playground.4geeks.com/apis/fake/todos/user/kcox", {
-      method: "DELETE", // Use DELETE method for clearing all tasks
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
     })
       .then((resp) => resp.json())
       .then((data) => {
-        // Update the local state with an empty list
         setTodos([]);
       })
       .catch((error) => {
-        // Handle errors
         console.log(error);
       });
   };
 
- return (
-  <div className="container">
-    <h1>My Todos</h1>
-    <ul>
-      <li>
-        <input 
-        type="text" 
-        onChange={(e) => setInputValue(e.target.value)}
-        value={inputValue}
-        onKeyUp={(e) => {
-          if (e.key === "Enter") {
-          setTodos((prevTodos) => [...prevTodos, inputValue]);
-          setInputValue("");
-          }
-        }}
-        placeholder="What do you need to do?!?"></input></li>
+  return (
+    <div className="container">
+      <h1>My Todos</h1>
+      <ul>
+        <li>
+          <input
+            type="text"
+            onChange={(e) => setInputValue(e.target.value)}
+            value={inputValue}
+            onKeyUp={(e) => {
+              if (e.key === "Enter") {
+                setTodos((prevTodos) => [...prevTodos, { label: inputValue, done: false }]);
+                setInputValue("");
+              }
+            }}
+            placeholder="What do you need to do?!?"
+          />
+        </li>
         {todos.map((item, index) => (
-        <li>{item}<i class="fa-solid fa-trash" onClick={() => setTodos(todos.filter((t, currentIndex) => index != currentIndex))}></i></li>
+          <li key={index}>
+            {item.label}
+            <i className="fa-solid fa-trash" onClick={() => deleteTask(index)}></i>
+          </li>
         ))}
-    </ul>
-    <div>{todos.length}</div>
-  </div>
-);
+      </ul>
+      <div>{todos.length}</div>
+    </div>
+  );
 };
 
 export default Home;
-
-
